@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Traffic Intersection Simulation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .presentation-container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .slide {
+            width: 1280px;
+            height: 720px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Title Slide */
+        .slide.title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px;
+        }
+
+        .title-slide .logo {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .title-slide h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .title-slide .subtitle {
+            font-size: 24px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .title-slide .authors {
+            font-size: 20px;
+            opacity: 0.8;
+        }
+
+        /* Content Slide */
+        .content-slide {
+            padding: 50px 60px;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .slide-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .slide-header .icon {
+            font-size: 40px;
+            color: #667eea;
+            margin-right: 20px;
+        }
+
+        .slide-header h2 {
+            font-size: 36px;
+            color: #2d3748;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .content-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .content-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .content-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .content-box h3 i {
+            margin-right: 10px;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 8px 0;
+            color: #4a5568;
+            font-size: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .content-box li:before {
+            content: "▸";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Chart Styles */
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        .bar {
+            width: 60px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #4a5568;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Architecture Diagram */
+        .architecture {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .arch-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 2px solid #667eea;
+        }
+
+        .arch-box i {
+            font-size: 40px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .arch-box h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .arch-box p {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .tech-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .feature-card i {
+            font-size: 35px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .feature-card h4 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #718096;
+            font-size: 13px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin-top: 20px;
+        }
+
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #667eea;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 20px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+        }
+
+        .timeline-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .timeline-item p {
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .scroll-top:hover {
+            background: #764ba2;
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide title-slide">
+            <div class="logo">
+                <i class="fas fa-traffic-light"></i>
+            </div>
+            <h1>AI Traffic Intersection Simulation</h1>
+            <div class="subtitle">Intelligent Traffic Management System</div>
+            <div class="authors">
+                <i class="fas fa-users"></i> Developed by: Yad Najat • Aras Latif • Ahmed Othman
+            </div>
+            <br><br>
+
+
+<div class="authors">
+                <i class="fas fa-users"></i> Supervised by: <br>Dr. Ismael Abdulrahman <br>Mr. Rasty Shaxawan
+            </div>
+
+
+
+            <div class="slide-number">1 / 13</div>
+        </div>
+
+        <!-- Slide 2: Project Overview -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-info-circle"></i></div>
+                <h2>Project Overview</h2>
+            </div>
+            <div class="content-grid">
+                <div class="content-box">
+                    <h3><i class="fas fa-microchip"></i> Core Technology</h3>
+                    <ul>
+                        <li>Real-time traffic simulation</li>
+                        <li>Python & Pygame engine</li>
+                        <li>AI-driven adaptive control</li>
+                        <li>Machine learning optimization</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-ambulance"></i> Emergency System</h3>
+                    <ul>
+                        <li>Vehicle prioritization</li>
+                        <li>Kurdish voice messages</li>
+                        <li>Automatic path clearing</li>
+                        <li>Real-time detection</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-cloud-sun-rain"></i> Environment</h3>
+                    <ul>
+                        <li>Dynamic weather effects</li>
+                        <li>Day/night cycles</li>
+                        <li>Rain & fog simulation</li>
+                        <li>Adaptive visibility</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-chart-line"></i> Monitoring</h3>
+                    <ul>
+                        <li>Statistical analysis</li>
+                        <li>Real-time metrics</li>
+                        <li>Performance tracking</li>
+                        <li>Interactive dashboard</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">2 / 13</div>
+        </div>
+
+        <!-- Slide 3: Objectives -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-bullseye"></i></div>
+                <h2>Project Objectives</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-city"></i>
+                    <h4>Realistic Simulation</h4>
+                    <p>Multi-lane urban intersection with authentic traffic behavior</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-clock"></i>
+                    <h4>Reduce Wait Time</h4>
+                    <p>ML-based optimization to minimize vehicle delays</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Emergency Priority</h4>
+                    <p>Ensure right-of-way for emergency vehicles</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-desktop"></i>
+                    <h4>Interactive Interface</h4>
+                    <p>User-friendly controls for experiments and demos</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-brain"></i>
+                    <h4>AI Integration</h4>
+                    <p>Smart decision-making based on real-time data</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <h4>Data Analytics</h4>
+                    <p>Comprehensive statistics and performance metrics</p>
+                </div>
+            </div>
+            <div class="slide-number">3 / 13</div>
+        </div>
+
+        <!-- Slide 4: System Architecture -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-sitemap"></i></div>
+                <h2>System Architecture</h2>
+            </div>
+            <div class="architecture">
+                <div class="arch-box">
+                    <i class="fas fa-cogs"></i>
+                    <h4>IntersectionController</h4>
+                    <p>Core logic managing traffic lights, vehicles, and signal cycles</p>
+                </div>
+                <div class="arch-box">
+                    <i class="fas fa-robot"></i>
+                    <h4>TrafficAI</h4>
+                    <p>ML model predicting optimal green-light durations</p>
+                </div>
+                <div class="arch-box">
+                    <i class="fas fa-paint-brush"></i>
+                    <h4>Renderer</h4>
+                    <p>Visual engine for environment, vehicles, signals & UI</p>
+                </div>
+                <div class="arch-box">
+                    <i class="fas fa-gamepad"></i>
+                    <h4>Event System</h4>
+                    <p>Controls, buttons, keyboard input & vehicle spawning</p>
+                </div>
+            </div>
+            <div class="chart-container" style="margin-top: 30px;">
+                <h3 style="color: #2d3748; margin-bottom: 15px;"><i class="fas fa-project-diagram"></i> Data Flow</h3>
+                <div style="text-align: center; color: #4a5568; font-size: 14px;">
+                    Sensors → TrafficAI → IntersectionController → Renderer → Display
+                </div>
+            </div>
+            <div class="slide-number">4 / 13</div>
+        </div>
+
+        <!-- Slide 5: Key Technologies -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-code"></i></div>
+                <h2>Key Technologies</h2>
+            </div>
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="margin-bottom: 20px;">
+                    <span class="tech-badge"><i class="fab fa-python"></i> Python 3.10+</span>
+                    <span class="tech-badge"><i class="fas fa-gamepad"></i> Pygame</span>
+                    <span class="tech-badge"><i class="fas fa-chart-area"></i> NumPy</span>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <span class="tech-badge"><i class="fas fa-table"></i> Pandas</span>
+                    <span class="tech-badge"><i class="fas fa-brain"></i> Scikit-learn</span>
+                    <span class="tech-badge"><i class="fas fa-cube"></i> OOP Design</span>
+                </div>
+            </div>
+            <div class="content-grid" style="margin-top: 30px;">
+                <div class="content-box">
+                    <h3><i class="fas fa-layer-group"></i> Architecture</h3>
+                    <ul>
+                        <li>Object-Oriented Programming</li>
+                        <li>Dataclasses for modularity</li>
+                        <li>Separation of concerns</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-database"></i> Data Processing</h3>
+                    <ul>
+                        <li>Real-time data collection</li>
+                        <li>Statistical analysis</li>
+                        <li>Performance metrics</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">5 / 13</div>
+        </div>
+
+        <!-- Slide 6: Traffic Light Logic -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-traffic-light"></i></div>
+                <h2>Traffic Light Logic</h2>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4><i class="fas fa-arrows-alt-v"></i> North-South Phase</h4>
+                    <p>Autonomous phase switching with yellow transitions between directions</p>
+                </div>
+                <div class="timeline-item">
+                    <h4><i class="fas fa-arrows-alt-h"></i> East-West Phase</h4>
+                    <p>Alternating with N-S phase for optimal traffic flow management</p>
+                </div>
+                <div class="timeline-item">
+                    <h4><i class="fas fa-clock"></i> AI-Generated Timing</h4>
+                    <p>Green light duration: 18-45 seconds based on AI predictions</p>
+                </div>
+                <div class="timeline-item">
+                    <h4><i class="fas fa-brain"></i> Adaptive Intelligence</h4>
+                    <p>Considers queue length, wait time, flow rate, weather, and time of day</p>
+                </div>
+            </div>
+            <div class="slide-number">6 / 13</div>
+        </div>
+
+        <!-- Slide 7: AI Model Training -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-brain"></i></div>
+                <h2>AI Model Training</h2>
+            </div>
+            <div class="content-grid">
+                <div class="content-box">
+                    <h3><i class="fas fa-cog"></i> Model Architecture</h3>
+                    <ul>
+                        <li>GradientBoostingRegressor</li>
+                        <li>StandardScaler normalization</li>
+                        <li>600+ synthetic training rows</li>
+                        <li>Optimized hyperparameters</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-download"></i> Input Features</h3>
+                    <ul>
+                        <li>Queue lengths per direction</li>
+                        <li>Vehicle waiting times</li>
+                        <li>Traffic flow rates</li>
+                        <li>Hour, day, weather, emergency</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3 style="color: #2d3748; margin-bottom: 10px;"><i class="fas fa-chart-bar"></i> Green Time Prediction Range</h3>
+                <div class="bar-chart">
+                    <div class="bar" style="height: 60%;">
+                        <span class="bar-value">18s</span>
+                        <span class="bar-label">Minimum</span>
+                    </div>
+                    <div class="bar" style="height: 80%;">
+                        <span class="bar-value">30s</span>
+                        <span class="bar-label">Average</span>
+                    </div>
+                    <div class="bar" style="height: 100%;">
+                        <span class="bar-value">45s</span>
+                        <span class="bar-label">Maximum</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-number">7 / 13</div>
+        </div>
+
+        <!-- Slide 8: Vehicle Simulation -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-car"></i></div>
+                <h2>Vehicle Simulation</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-car"></i>
+                    <h4>Cars</h4>
+                    <p>Standard vehicles with lane behavior</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-truck"></i>
+                    <h4>Trucks</h4>
+                    <p>Heavy vehicles with slower acceleration</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bus"></i>
+                    <h4>Buses</h4>
+                    <p>Public transport with stopping patterns</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-ambulance"></i>
+                    <h4>Ambulances</h4>
+                    <p>Priority emergency vehicle</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Police</h4>
+                    <p>Law enforcement vehicles</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-fire-extinguisher"></i>
+                    <h4>Fire Trucks</h4>
+                    <p>Emergency response units</p>
+                </div>
+            </div>
+            <div class="content-box" style="margin-top: 20px;">
+                <h3><i class="fas fa-shield-alt"></i> Safety Features</h3>
+                <ul>
+                    <li>Distance-based collision avoidance with intelligent following behavior</li>
+                    <li>Lane-specific movement with direction awareness and position tracking</li>
+                    <li>Emergency vehicles bypass red lights for priority response times</li>
+                </ul>
+            </div>
+            <div class="slide-number">8 / 13</div>
+        </div>
+
+        <!-- Slide 9: Emergency System -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h2>Emergency Vehicle System</h2>
+            </div>
+            <div class="content-grid">
+                <div class="content-box">
+                    <h3><i class="fas fa-radar"></i> Detection</h3>
+                    <ul>
+                        <li>Real-time vehicle identification</li>
+                        <li>Ambulance tracking</li>
+                        <li>Police vehicle monitoring</li>
+                        <li>Fire truck detection</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-road"></i> Path Management</h3>
+                    <ul>
+                        <li>Immediate green light override</li>
+                        <li>Normal cycle suspension</li>
+                        <li>Clear path guarantee</li>
+                        <li>Priority lane access</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-language"></i> Kurdish Messages</h3>
+                    <ul>
+                        <li>Voice message system</li>
+                        <li>Cultural localization</li>
+                        <li>Audio alerts</li>
+                        <li>Clear communication</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-bell"></i> Visual Alerts</h3>
+                    <ul>
+                        <li>Global warning banner</li>
+                        <li>Top-screen notification</li>
+                        <li>Emergency indicators</li>
+                        <li>Status displays</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">9 / 13</div>
+        </div>
+
+        <!-- Slide 10: Environmental Features -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-cloud-sun"></i></div>
+                <h2>Environmental Features</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-sun"></i>
+                    <h4>Clear Weather</h4>
+                    <p>Optimal visibility and normal traffic flow</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cloud-rain"></i>
+                    <h4>Rain Mode</h4>
+                    <p>Particle effects and reduced speeds</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-smog"></i>
+                    <h4>Fog Conditions</h4>
+                    <p>Overlay effects with limited visibility</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-sun"></i>
+                    <h4>Daytime</h4>
+                    <p>Full visibility and standard operations</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-moon"></i>
+                    <h4>Nighttime</h4>
+                    <p>Reduced visibility with vehicle headlights</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-lightbulb"></i>
+                    <h4>Dynamic Lighting</h4>
+                    <p>Automatic headlight activation at night</p>
+                </div>
+            </div>
+            <div class="slide-number">10 / 13</div>
+        </div>
+
+        <!-- Slide 11: User Interface -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-desktop"></i></div>
+                <h2>User Interface & Controls</h2>
+            </div>
+            <div class="content-grid">
+                <div class="content-box">
+                    <h3><i class="fas fa-mouse-pointer"></i> Interactive Controls</h3>
+                    <ul>
+                        <li>Button-based vehicle spawning</li>
+                        <li>Keyboard shortcuts</li>
+                        <li>Pause/resume functionality</li>
+                        <li>AI toggle switch</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-sliders-h"></i> System Settings</h3>
+                    <ul>
+                        <li>Weather mode toggle</li>
+                        <li>Auto-spawn system</li>
+                        <li>Adjustable spawn speed</li>
+                        <li>Customizable parameters</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-chart-line"></i> Real-Time Statistics</h3>
+                    <ul>
+                        <li>Queue length monitoring</li>
+                        <li>Average wait time display</li>
+                        <li>Traffic flow metrics</li>
+                        <li>Total vehicles passed</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3><i class="fas fa-tachometer-alt"></i> Performance Dashboard</h3>
+                    <ul>
+                        <li>Live data visualization</li>
+                        <li>Historical trends</li>
+                        <li>Efficiency metrics</li>
+                        <li>System health indicators</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="slide-number">11 / 13</div>
+        </div>
+
+        <!-- Slide 12: Project Outcomes -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-trophy"></i></div>
+                <h2>Project Outcomes</h2>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4><i class="fas fa-check-circle"></i> Fully Functional System</h4>
+                    <p>Complete intelligent traffic intersection with all core features operational</p>
+                </div>
+                <div class="timeline-item">
+                    <h4><i class="fas fa-eye"></i> Realistic Physics & Visuals</h4>
+                    <p>Authentic vehicle behavior with high-quality visual feedback and animations</p>
+                </div>
+                <div class="timeline-item">
+                    <h4><i class="fas fa-clock"></i> Reduced Wait Times</h4>
+                    <p>AI optimization successfully minimizes average vehicle waiting time at intersections</p>
+                </div>
+                <div class="timeline-item">
+                    <h4><i class="fas fa-puzzle-piece"></i> ML + Simulation + UI Integration</h4>
+                    <p>Seamless integration of machine learning, real-time simulation, and user interface</p>
+                </div>
+            </div>
+            <div class="slide-number">12 / 13</div>
+        </div>
+
+        <!-- Slide 13: Future Improvements -->
+        <div class="slide content-slide">
+            <div class="slide-header">
+                <div class="icon"><i class="fas fa-rocket"></i></div>
+                <h2>Future Improvements</h2>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-brain"></i>
+                    <h4>Deep Learning</h4>
+                    <p>Advanced neural networks for traffic prediction</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h4>Multiple Intersections</h4>
+                    <p>Network routing and coordination between junctions</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-walking"></i>
+                    <h4>Pedestrian Simulation</h4>
+                    <p>Crosswalks and pedestrian traffic patterns</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-car-side"></i>
+                    <h4>Improved Physics</h4>
+                    <p>More realistic vehicle dynamics and behavior</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-film"></i>
+                    <h4>Better Animations</h4>
+                    <p>Enhanced visual effects and transitions</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-network-wired"></i>
+                    <h4>IoT Integration</h4>
+                    <p>Real-world sensor data and connectivity</p>
+                </div>
+            </div>
+            <div class="content-box" style="margin-top: 30px;">
+                <h3><i class="fas fa-star"></i> Vision for the Future</h3>
+                <ul>
+                    <li>Scalable city-wide traffic management system with real-time adaptation</li>
+                    <li>Integration with autonomous vehicle networks for smart city infrastructure</li>
+                    <li>Enhanced machine learning models using reinforcement learning techniques</li>
+                </ul>
+            </div>
+            <div class="slide-number">13 / 13</div>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <div class="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script>
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Show/hide scroll to top button
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.querySelector('.scroll-top');
+            if (window.pageYOffset > 300) {
+                scrollTop.style.display = 'flex';
+            } else {
+                scrollTop.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
